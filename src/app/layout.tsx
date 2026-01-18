@@ -11,14 +11,14 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
   title: {
-    default: `${SITE_NAME} · Live Flights & Airport Operations`,
-    template: `%s · ${SITE_NAME}`,
+    default: `AeroPulse · Live Flights & Airport Operations`,
+    template: `%s · AeroPulse`,
   },
 
   description:
     "Track live arrivals and departures, open verified flight details, and save favorites with a secure account — a premium flight board built for modern airport operations.",
 
-  applicationName: SITE_NAME,
+  applicationName: 'AeroPulse',
   generator: "Next.js",
   referrer: "origin-when-cross-origin",
 
@@ -41,10 +41,10 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: SITE_URL,
-    title: `${SITE_NAME} · Live Flights & Airport Operations`,
+    title: `AeroPulse · Live Flights & Airport Operations`,
     description:
       "Live flight board with arrivals, departures, smart filters, and favorites — designed for speed and clarity.",
-    siteName: SITE_NAME,
+    siteName: 'AeroPulse',
     locale: "en_US",
     images: [
       {
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} · Live Flights & Airport Operations`,
+    title: `AeroPulse · Live Flights & Airport Operations`,
     description:
       "Track arrivals and departures in real time and save the flights you care about.",
     images: ["/airport-logo.png"],
