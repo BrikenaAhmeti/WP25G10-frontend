@@ -27,7 +27,11 @@ function formatTime(iso?: string) {
 function formatDate(iso?: string) {
   if (!iso) return "-";
   const d = new Date(iso);
-  return d.toLocaleDateString([], { year: "numeric", month: "2-digit", day: "2-digit" });
+  return d.toLocaleDateString([], {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
 }
 
 function formatDateTimeCompact(iso?: string) {
@@ -36,7 +40,7 @@ function formatDateTimeCompact(iso?: string) {
 }
 
 function flightAwareUrl(f: FlightDto) {
-  // you asked: https://www.flightaware.com/live/flight/flight_code
+  // https://www.flightaware.com/live/flight/flight_code
   const code = (f.flightCode || f.flightNumber || "").replace(/\s+/g, "");
   return `https://www.flightaware.com/live/flight/${encodeURIComponent(code)}`;
 }
@@ -49,6 +53,7 @@ function pickFocusTime(f: FlightDto, board: Board) {
 
 export function FlightsBoard({ focus }: { focus: Focus }) {
   const { push } = useToast();
+
   const [board, setBoard] = useState<Board>("arrivals");
   const [search, setSearch] = useState("");
   const [date, setDate] = useState<string>("");
@@ -98,8 +103,14 @@ export function FlightsBoard({ focus }: { focus: Focus }) {
     });
 
     if (res.status === 401) {
-      push({ type: "info", title: "Login required", message: "Sign in to save favorites." });
-      window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent("/#flights")}`;
+      push({
+        type: "info",
+        title: "Login required",
+        message: "Sign in to save favorites.",
+      });
+      window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent(
+        "/#flights"
+      )}`;
       return;
     }
 
@@ -112,12 +123,14 @@ export function FlightsBoard({ focus }: { focus: Focus }) {
     push({ type: "success", title: "Saved to favorites", message: f.flightNumber });
   }
 
-
   return (
     <div className="rounded-3xl border border-white/15 bg-white/5 p-6 backdrop-blur-xl">
+      {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight">Live Flight Board</h2>
+          <h2 className="text-xl font-semibold tracking-tight">
+            Live Flight Board
+          </h2>
           <p className="text-sm text-white/60">
             {isFetching ? "Updating…" : "Arrivals & departures — search and filter."}
           </p>
@@ -128,17 +141,18 @@ export function FlightsBoard({ focus }: { focus: Focus }) {
             <button
               onClick={() => setBoard("arrivals")}
               className={`rounded-xl px-4 py-2 text-sm ${board === "arrivals"
-                ? "bg-white text-black"
-                : "text-white/85 hover:bg-white/10"
+                  ? "bg-white text-black"
+                  : "text-white/85 hover:bg-white/10"
                 }`}
             >
               Arrivals
             </button>
+
             <button
               onClick={() => setBoard("departures")}
               className={`rounded-xl px-4 py-2 text-sm ${board === "departures"
-                ? "bg-white text-black"
-                : "text-white/85 hover:bg-white/10"
+                  ? "bg-white text-black"
+                  : "text-white/85 hover:bg-white/10"
                 }`}
             >
               Departures
@@ -165,9 +179,8 @@ export function FlightsBoard({ focus }: { focus: Focus }) {
         </div>
       </div>
 
-      {/* Filters Row */}
+      {/* Filters */}
       <div className="mt-4 grid gap-2 lg:grid-cols-12">
-        {/* Search */}
         <div className="lg:col-span-7 flex items-center gap-2 rounded-2xl border border-white/15 bg-black/20 px-3 py-2">
           <Search size={16} className="text-white/60" />
           <input
@@ -215,8 +228,8 @@ export function FlightsBoard({ focus }: { focus: Focus }) {
           type="button"
           onClick={() => setDelayedOnly((v) => !v)}
           className={`lg:col-span-2 flex items-center justify-between gap-3 rounded-2xl border px-3 py-2 text-sm transition ${delayedOnly
-            ? "border-white/25 bg-white text-black"
-            : "border-white/15 bg-black/20 text-white/85 hover:bg-white/10"
+              ? "border-white/25 bg-white text-black"
+              : "border-white/15 bg-black/20 text-white/85 hover:bg-white/10"
             }`}
           title="Show delayed only"
         >
@@ -227,6 +240,7 @@ export function FlightsBoard({ focus }: { focus: Focus }) {
             />
             Delayed
           </span>
+
           <span
             className={`h-5 w-9 rounded-full p-0.5 ${delayedOnly ? "bg-black/20" : "bg-white/10"
               }`}
@@ -239,119 +253,122 @@ export function FlightsBoard({ focus }: { focus: Focus }) {
         </button>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-white/10">
-        <div className="grid grid-cols-15 bg-white/5 px-4 py-3 text-xs text-white/60">
-          <div className="col-span-2">Dep (date/time)</div>
-          <div className="col-span-2">Arr (date/time)</div>
-          <div className="col-span-2">Flight</div>
-          <div className="col-span-4">Route</div>
-          <div className="col-span-2">Gate</div>
-          <div className="col-span-1">Status</div>
-          <div className="col-span-1 text-right">Details</div>
-          <div className="col-span-1 text-right">Actions</div>
-        </div>
-
-        <div className="divide-y divide-white/10">
-          {isLoading &&
-            Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="grid grid-cols-15 px-4 py-4 animate-pulse">
-                <div className="col-span-2 h-4 rounded bg-white/10" />
-                <div className="col-span-2 mx-3 h-4 rounded bg-white/10" />
-                <div className="col-span-2 mx-3 h-4 rounded bg-white/10" />
-                <div className="col-span-4 mx-3 h-4 rounded bg-white/10" />
-                <div className="col-span-2 mx-3 h-4 rounded bg-white/10" />
-                <div className="col-span-1 mx-3 h-4 rounded bg-white/10" />
-                <div className="col-span-1 mx-3 h-4 rounded bg-white/10" />
-                <div className="col-span-1 ml-auto h-8 w-20 rounded bg-white/10" />
-              </div>
-            ))}
-
-          {isError && (
-            <div className="px-4 py-10 text-center text-sm text-red-300">
-              Failed to load flights. {(error as Error)?.message}
+      {/* TABLE (scrollable on small screens) */}
+      <div className="mt-6 rounded-2xl border border-white/10 overflow-hidden">
+        <div className="w-full overflow-x-auto">
+          <div className="min-w-[980px]">
+            <div className="grid grid-cols-15 bg-white/5 px-4 py-3 text-xs text-white/60">
+              <div className="col-span-2">Dep (date/time)</div>
+              <div className="col-span-2">Arr (date/time)</div>
+              <div className="col-span-2">Flight</div>
+              <div className="col-span-4">Route</div>
+              <div className="col-span-2">Gate</div>
+              <div className="col-span-1">Status</div>
+              <div className="col-span-1 text-right">Details</div>
+              <div className="col-span-1 text-right">Actions</div>
             </div>
-          )}
 
-          {!isLoading &&
-            !isError &&
-            rows.map((f, idx) => {
-              const dep = formatDateTimeCompact(f.departureDateTime ?? f.departureTime);
-              const arr = formatDateTimeCompact(f.arrivalDateTime ?? f.arrivalTime);
-
-              const route =
-                board === "arrivals"
-                  ? `${f.originAirport} → Prishtina`
-                  : `Prishtina → ${f.destinationAirport}`;
-
-              return (
-                <motion.div
-                  key={f.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.25, delay: idx * 0.015 }}
-                  className="grid grid-cols-15 items-center px-4 py-4 text-sm"
-                >
-                  <div className="col-span-2">
-                    <div className="font-mono text-white/90">{dep.time}</div>
-                    <div className="text-xs text-white/60">{dep.date}</div>
+            <div className="divide-y divide-white/10">
+              {isLoading &&
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="grid grid-cols-15 px-4 py-4 animate-pulse">
+                    <div className="col-span-2 h-4 rounded bg-white/10" />
+                    <div className="col-span-2 mx-3 h-4 rounded bg-white/10" />
+                    <div className="col-span-2 mx-3 h-4 rounded bg-white/10" />
+                    <div className="col-span-4 mx-3 h-4 rounded bg-white/10" />
+                    <div className="col-span-2 mx-3 h-4 rounded bg-white/10" />
+                    <div className="col-span-1 mx-3 h-4 rounded bg-white/10" />
+                    <div className="col-span-1 mx-3 h-4 rounded bg-white/10" />
+                    <div className="col-span-1 ml-auto h-8 w-20 rounded bg-white/10" />
                   </div>
+                ))}
 
-                  <div className="col-span-2">
-                    <div className="font-mono text-white/90">{arr.time}</div>
-                    <div className="text-xs text-white/60">{arr.date}</div>
-                  </div>
+              {isError && (
+                <div className="px-4 py-10 text-center text-sm text-red-300">
+                  Failed to load flights. {(error as Error)?.message}
+                </div>
+              )}
 
-                  <div className="col-span-2">
-                    <div className="font-semibold">{f.flightNumber}</div>
-                    <div className="text-xs text-white/60">
-                      {f.airlineName} ({f.airlineCode})
-                    </div>
-                  </div>
+              {!isLoading &&
+                !isError &&
+                rows.map((f, idx) => {
+                  const dep = formatDateTimeCompact(f.departureDateTime ?? f.departureTime);
+                  const arr = formatDateTimeCompact(f.arrivalDateTime ?? f.arrivalTime);
 
-                  <div className="col-span-4 text-white/80">{route}</div>
+                  const route =
+                    board === "arrivals"
+                      ? `${f.originAirport} → Prishtina`
+                      : `Prishtina → ${f.destinationAirport}`;
 
-                  <div className="col-span-2 text-white/70">
-                    {f.gateTerminal ?? "-"}-{f.gateCode ?? "-"}
-                  </div>
-
-                  <div className="col-span-1">
-                    <span className="rounded-full border border-white/15 bg-white/5 px-2 py-1 text-xs">
-                      {f.status}
-                    </span>
-                  </div>
-
-                  <div className="col-span-1 flex justify-end gap-2">
-                    <a
-                      href={flightAwareUrl(f)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-xl border border-white/15 bg-white/5 p-2  text-white hover:bg-white/10"
-                      title="Open FlightAware"
+                  return (
+                    <motion.div
+                      key={f.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25, delay: idx * 0.015 }}
+                      className="grid grid-cols-15 items-center px-4 py-4 text-sm"
                     >
-                      <ExternalLink size={16} />
-                    </a>
-                  </div>
-                  <div className="col-span-1 flex justify-end gap-2">
+                      <div className="col-span-2">
+                        <div className="font-mono text-white/90">{dep.time}</div>
+                        <div className="text-xs text-white/60">{dep.date}</div>
+                      </div>
 
+                      <div className="col-span-2">
+                        <div className="font-mono text-white/90">{arr.time}</div>
+                        <div className="text-xs text-white/60">{arr.date}</div>
+                      </div>
 
-                    <button
-                      onClick={() => onSave(f)}
-                      className="rounded-xl border border-white/15 bg-white/5 p-2 hover:bg-white/10"
-                      title="Save flight"
-                    >
-                      <Star size={16} />
-                    </button>
-                  </div>
+                      <div className="col-span-2">
+                        <div className="font-semibold">{f.flightNumber}</div>
+                        <div className="text-xs text-white/60">
+                          {f.airlineName} ({f.airlineCode})
+                        </div>
+                      </div>
 
-                </motion.div>
-              );
-            })}
+                      <div className="col-span-4 text-white/80">{route}</div>
 
-          {!isLoading && !isError && !rows.length && (
-            <div className="px-4 py-10 text-center text-sm text-white/60">
-              No flights found.
+                      <div className="col-span-2 text-white/70">
+                        {f.gateTerminal ?? "-"}-{f.gateCode ?? "-"}
+                      </div>
+
+                      <div className="col-span-1">
+                        <span className="rounded-full border border-white/15 bg-white/5 px-2 py-1 text-xs">
+                          {f.status}
+                        </span>
+                      </div>
+
+                      <div className="col-span-1 flex justify-end">
+                        <a
+                          href={flightAwareUrl(f)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-xl border border-white/15 bg-white/5 p-2 text-white hover:bg-white/10"
+                          title="Open FlightAware"
+                        >
+                          <ExternalLink size={16} />
+                        </a>
+                      </div>
+
+                      <div className="col-span-1 flex justify-end">
+                        <button
+                          onClick={() => onSave(f)}
+                          className="rounded-xl border border-white/15 bg-white/5 p-2 hover:bg-white/10"
+                          title="Save flight"
+                        >
+                          <Star size={16} />
+                        </button>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+
+              {!isLoading && !isError && !rows.length && (
+                <div className="px-4 py-10 text-center text-sm text-white/60">
+                  No flights found.
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
