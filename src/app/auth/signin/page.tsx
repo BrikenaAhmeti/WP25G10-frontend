@@ -1,13 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+
+function safeCallbackUrl(raw: string | null) {
+  const fallback = "/";
+  const v = raw?.trim() || fallback;
+
+  if (!v.startsWith("/")) return fallback;
+
+  if (v.startsWith("/auth/signin") || v.startsWith("/auth/register")) return fallback;
+
+  return v;
+}
 
 export default function SignInPage() {
   const router = useRouter();
   const sp = useSearchParams();
-  const callbackUrl = sp.get("callbackUrl") || "/";
+  const callbackUrl = useMemo(() => safeCallbackUrl(sp.get("callbackUrl")), [sp]);
 
   const { status } = useSession();
 
@@ -16,12 +27,17 @@ export default function SignInPage() {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // If already logged in, go to callbackUrl once.
   useEffect(() => {
-    if (status === "authenticated") router.replace(callbackUrl);
-  }, [status, router, callbackUrl]);
+    if (status !== "authenticated") return;
+    router.replace(callbackUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, callbackUrl]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
+
     setErr(null);
     setLoading(true);
 
@@ -39,7 +55,14 @@ export default function SignInPage() {
       return;
     }
 
-    router.replace(res.url ?? callbackUrl);
+    // NextAuth may return absolute URL - normalize to relative
+    const url = res.url || callbackUrl;
+    try {
+      const u = new URL(url, window.location.origin);
+      router.replace(u.pathname + u.search + u.hash);
+    } catch {
+      router.replace(callbackUrl);
+    }
   }
 
   return (

@@ -109,7 +109,7 @@ export function HomeHero() {
                             className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/20 px-3 py-2 text-xs text-white/70"
                         >
                             <Sparkles size={14} />
-                            AeroPulse • Airport Ops Console (Demo)
+                            AeroPulse
                         </motion.div>
 
                         <motion.h1

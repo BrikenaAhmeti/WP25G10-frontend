@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 
@@ -32,13 +32,27 @@ function pickErrorMessage(payload: unknown, fallback: string) {
     return fallback;
 }
 
+function safeCallbackUrl(raw: string | null) {
+    const fallback = "/";
+    const v = raw?.trim() || fallback;
+    if (!v.startsWith("/")) return fallback;
+    if (v.startsWith("/auth/signin") || v.startsWith("/auth/register")) return fallback;
+    return v;
+}
+
 export default function RegisterPage() {
     const router = useRouter();
+    const sp = useSearchParams();
+    const callbackUrl = useMemo(() => safeCallbackUrl(sp.get("callbackUrl")), [sp]);
+
     const { status } = useSession();
 
+    // If already logged in, go to callbackUrl (NOT /auth/*)
     useEffect(() => {
-        if (status === "authenticated") router.replace("/");
-    }, [status, router]);
+        if (status !== "authenticated") return;
+        router.replace(callbackUrl);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [status, callbackUrl]);
 
     const [err, setErr] = useState<string | null>(null);
     const [ok, setOk] = useState<string | null>(null);
@@ -65,13 +79,15 @@ export default function RegisterPage() {
         setOk(null);
         setIsLoading(true);
 
+        const currentEmail = email.trim();
+
         try {
             const res = await fetch(`/api/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     userName: userName.trim(),
-                    email: email.trim(),
+                    email: currentEmail,
                     password,
                 }),
             });
@@ -92,12 +108,18 @@ export default function RegisterPage() {
             }
 
             setOk("Account created! Redirecting to sign in…");
-            setUserName('')
-            setEmail('')
-            setPassword('')
+            setUserName("");
+            setEmail("");
+            setPassword("");
+
+            // Send them to sign in and preserve callbackUrl
             setTimeout(() => {
-                router.push(`/auth/signin?email=${encodeURIComponent(email.trim())}`);
-            }, 1200);
+                router.push(
+                    `/auth/signin?email=${encodeURIComponent(currentEmail)}&callbackUrl=${encodeURIComponent(
+                        callbackUrl
+                    )}`
+                );
+            }, 900);
         } catch (e: any) {
             setErr(e?.message || "Registration failed. Please try again.");
         } finally {
@@ -164,7 +186,7 @@ export default function RegisterPage() {
                         {ok}
                         <div className="mt-2">
                             <button
-                                onClick={() => router.push("/auth/signin")}
+                                onClick={() => router.push(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`)}
                                 className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-xs text-white hover:bg-white/10"
                             >
                                 Go to sign in now →

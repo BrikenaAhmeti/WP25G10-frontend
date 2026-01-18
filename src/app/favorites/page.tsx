@@ -4,6 +4,7 @@ import type { FlightDto } from "@/types/flight";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
+import { Footer } from "@/components/Footer";
 
 export default async function FavoritesPage() {
   const session = await getServerSession(authOptions);
@@ -49,6 +50,7 @@ export default async function FavoritesPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </>
   );
 }

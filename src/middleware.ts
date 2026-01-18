@@ -4,9 +4,7 @@ import type { NextRequest } from "next/server";
 export function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
-  if (!pathname.startsWith("/favorites")) {
-    return NextResponse.next();
-  }
+  if (!pathname.startsWith("/favorites")) return NextResponse.next();
 
   const hasSession =
     req.cookies.get("next-auth.session-token") ||
